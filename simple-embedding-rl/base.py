@@ -77,7 +77,7 @@ if __name__ == "__main__":
       padding_size = 150 - new_embeddings.shape[1]
       paddings = tf.constant([[0, 0], [0, padding_size]])
       # padded_tensor = tf.pad(new_embeddings, paddings, 'CONSTANT')
-      # print("padded tensor", padded_tensor)
+
 
       agent = Agent()
       action = agent.choose_action(new_embeddings)
