@@ -10,6 +10,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
+
+
 namespace nfd {
 namespace face {
 namespace ams {
@@ -20,8 +22,11 @@ public:
   
   // _FIFO(char *fifo_suppression_value, char *fifo_object_details);
   
-  void
+  // void
+  // fifo_handler(const std::string& content);
+  double
   fifo_handler(const std::string& content);
+  
   
   time::milliseconds 
   fifo_read();
@@ -58,7 +63,7 @@ public:
   EMAMeasurements(double expMovingAverage, int lastDuplicateCount, double suppressionTime);
 
   void
-  addUpdateEMA(int duplicateCount, bool wasForwarded, std::string name);
+  addUpdateEMA(int duplicateCount, bool wasForwarded, std::string name, int rtt, double srtt);
 
   scheduler::EventId&
   getEMAExpiration()
@@ -85,7 +90,7 @@ public:
   }
 
   void
-  updateDelayTime(bool wasForwarded, std::string name);
+  updateDelayTime(bool wasForwarded, std::string name, int rtt, double srtt);
 
   double
   getCurrentSuppressionTime()
@@ -119,8 +124,14 @@ public:
 
   struct ObjectHistory
   {
-    int counter;
-    bool isForwarded;
+    int counter = 0;
+    bool isForwarded = false;
+    // std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::milliseconds> tripTime; // New member for round trip time
+    long long propagationTime = 0;
+    int rtt = 0;
+    double srtt = 0.0;
+    // std::chrono::milliseconds propagationTime;
+    // std::string propagationTime;
   };
 
   void
@@ -138,6 +149,26 @@ public:
       return it->second.counter;
     return 0;
   }
+
+  int
+  getRTT(const Name name, char type)
+  {
+      auto temp_map = getRecorder(type);
+      auto it = temp_map->find(name);
+      if (it != temp_map->end())
+          return it->second.rtt;
+      return 0;
+  }
+
+  double
+  getSRTT(const Name name, char type){
+      auto temp_map = getRecorder(type);
+      auto it = temp_map->find(name);
+      if (it != temp_map->end())
+          return it->second.srtt;
+      return 0;
+  }
+
 
   std::map<Name, ObjectHistory>*
   getRecorder(char type)
@@ -199,11 +230,14 @@ private:
 
   std::map<ndn::Name, ObjectHistory> m_dataHistory;
   std::map<ndn::Name, ObjectHistory> m_interestHistory;
+
   std::map <Name, scheduler::EventId> m_objectExpirationTimer;
   std::map<Name, std::shared_ptr<EMAMeasurements>> m_EMA_data;
   std::map<Name, std::shared_ptr<EMAMeasurements>> m_EMA_interest;
   NameTree m_dataNameTree;
   NameTree m_interestNameTree;
+
+
   // _FIFO m_fifo;
 };
 } //namespace ams

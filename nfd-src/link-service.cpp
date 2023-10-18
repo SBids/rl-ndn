@@ -45,6 +45,7 @@ LinkService::setFaceAndTransport(Face& face, Transport& transport) noexcept
 void
 LinkService::sendInterest(const Interest& interest)
 {
+  NFD_LOG_INFO("****************** SendInterest Function called ********************");
   BOOST_ASSERT(m_transport != nullptr);
   NFD_LOG_FACE_TRACE(__func__);
 
@@ -81,6 +82,7 @@ LinkService::sendInterest(const Interest& interest)
 void
 LinkService::sendData(const Data& data)
 {
+  NFD_LOG_INFO("****************** SendData Function called ********************");
   BOOST_ASSERT(m_transport != nullptr);
   NFD_LOG_FACE_TRACE(__func__);
   if (this->getFace()->getLinkType() != ndn::nfd::LINK_TYPE_MULTI_ACCESS)
@@ -128,6 +130,7 @@ LinkService::sendData(const Data& data)
 void
 LinkService::sendNack(const ndn::lp::Nack& nack)
 {
+  NFD_LOG_INFO("****************** sendNack Function called ********************");
   BOOST_ASSERT(m_transport != nullptr);
   NFD_LOG_FACE_TRACE(__func__);
 
@@ -139,6 +142,7 @@ LinkService::sendNack(const ndn::lp::Nack& nack)
 bool
 LinkService::cancelIfSchdeuled(Name name, int type)
 {
+  NFD_LOG_INFO("****************** cancelIfScheduled Function called ********************");
   auto entry_name = name.appendNumber(type);
   auto it = m_scheduledEntry.find(entry_name);
   if (it != m_scheduledEntry.end()) {
@@ -152,13 +156,15 @@ LinkService::cancelIfSchdeuled(Name name, int type)
 void
 LinkService::receiveInterest(const Interest& interest, const EndpointId& endpoint)
 {
+  NFD_LOG_INFO("****************** receiveInterest Function called ********************");
   NFD_LOG_FACE_TRACE(__func__);
   // record multicast interest
   if (this->getFace()->getLinkType() == ndn::nfd::LINK_TYPE_MULTI_ACCESS)
   {
+    NFD_LOG_INFO("!!!!!!!!!!!!!!!!! Interest Starts from here !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     NFD_LOG_INFO("Multicast interest received: " << interest.getName());
     // check if a same interest is scheduled, if so drop it
-    if (cancelIfSchdeuled(interest.getName(), 0))
+    if (cancelIfSchdeuled(interest.getName(), 0)) // checks whether the packet is in measurement table and drops if its already there
       NDN_LOG_INFO("Interest drop, Interest " << interest.getName() << " overheard, duplicate forwarding dropped");
     m_multicastSuppression.recordInterest(interest, false);
   }
@@ -169,6 +175,7 @@ LinkService::receiveInterest(const Interest& interest, const EndpointId& endpoin
 void
 LinkService::receiveData(const Data& data, const EndpointId& endpoint)
 {
+  NFD_LOG_INFO("****************** receiveData Function called ********************");
   NFD_LOG_FACE_TRACE(__func__);
   // record multicast Data received
   if (this->getFace()->getLinkType() == ndn::nfd::LINK_TYPE_MULTI_ACCESS)
@@ -191,6 +198,7 @@ LinkService::receiveData(const Data& data, const EndpointId& endpoint)
 void
 LinkService::receiveNack(const ndn::lp::Nack& nack, const EndpointId& endpoint)
 {
+  NFD_LOG_INFO("****************** receiveNack Function called ********************");
   NFD_LOG_FACE_TRACE(__func__);
 
   ++this->nInNacks;
@@ -201,6 +209,7 @@ LinkService::receiveNack(const ndn::lp::Nack& nack, const EndpointId& endpoint)
 void
 LinkService::notifyDroppedInterest(const Interest& interest)
 {
+  NFD_LOG_INFO("****************** notifyDroppedInterest Function called ********************");
   ++this->nInterestsExceededRetx;
   onDroppedInterest(interest);
 }
